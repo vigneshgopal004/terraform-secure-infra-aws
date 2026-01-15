@@ -15,7 +15,7 @@ resource "aws_security_group" "ec2_sg" {
   }
 
   egress {
-    description = "Outbound traffic"
+    description = "Allow all outbound traffic"
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
@@ -29,23 +29,15 @@ resource "aws_security_group" "ec2_sg" {
 
 # ----------------------------
 # EC2 Instance (Private, SSM-only)
+# Amazon Linux 2023
 # ----------------------------
 resource "aws_instance" "app" {
-  ami                         = "ami-0f5ee92e2d63afc18" # Amazon Linux 2 (ap-south-1)
-  instance_type               = "t3.micro"
-  subnet_id                   = aws_subnet.private_1.id
-  vpc_security_group_ids      = [aws_security_group.ec2_sg.id]
-  iam_instance_profile        = aws_iam_instance_profile.ec2_profile.name
+  ami                    = "ami-0ced6a024bb18ff2e"
+  instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.private_1.id
+  vpc_security_group_ids = [aws_security_group.ec2_sg.id]
+  iam_instance_profile   = aws_iam_instance_profile.ec2_profile.name
   associate_public_ip_address = false
-
-  user_data = <<-EOF
-              #!/bin/bash
-              yum update -y
-              yum install -y httpd
-              systemctl start httpd
-              systemctl enable httpd
-              echo "Secure Production EC2 via ALB" > /var/www/html/index.html
-              EOF
 
   tags = {
     Name = "secure-prod-ec2"
